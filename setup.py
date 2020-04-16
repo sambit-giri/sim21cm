@@ -15,6 +15,6 @@ setup(name='sim21cm',
       package_dir = {'sim21cm' : 't2c'},
       packages=['sim21cm'],
       package_data={'share':['*'],},
-      install_requires=['numpy','scipy', 'tools21cm@git+https://github.com/sambit-giri/tools21cm.git'],
+      install_requires=['numpy','scipy']#, 'tools21cm@git+https://github.com/sambit-giri/tools21cm.git'],
       #include_package_data=True,
 )
