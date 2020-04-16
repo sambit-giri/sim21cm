@@ -15,6 +15,6 @@ In order to install it in a separate directory::
 
 One can also install it using pip by running the following command::
 
-    pip install git+https://github.com/sambit-giri/tools21cm.git
+    pip install git+https://github.com/sambit-giri/sim21cm.git
 
 
