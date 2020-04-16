@@ -7,7 +7,6 @@ Setup script
 #from setuptools import setup, find_packages
 from distutils.core import setup
 
-
 setup(name='sim21cm',
       version='0.0.1',
       author='Sambit Giri',
