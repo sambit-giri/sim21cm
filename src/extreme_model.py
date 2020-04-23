@@ -47,11 +47,11 @@ class InsideOut:
             from astropy.io import fits
             fits.writeto(filename, data)
 
-    def xi_mass_average(self, dens, xi):
+    def xi_mass_average(self, dens, x0):
         dens_flatn = dens.flatten()
         if np.any(dens<0): dens_flatn - dens.min() + 1
         arg_ascend = np.argsort(dens_flatn)
-        thres = dens_flatn.sum()*(1-xi)
+        thres = dens_flatn.sum()*(1-x0)
         out = np.ones_like(dens_flatn)
         mass  = 0
         print('Running a brute force method for mass averaged ionization.')
@@ -59,14 +59,34 @@ class InsideOut:
             mass = mass+dens_flatn[i]
             if mass>thres: break
             out[i] = 0
-        return out.reshape(dens.shape)
+        out = out.reshape(dens.shape)
+        print('Ionisation fractions: %.3f (vol avg), %.3f (mass avg)'%(out.mean(),(out*dens/dens.mean()).mean()))
+        return out
 
-    def xi_volume_average(self, dens, xi):
+    def xi_volume_average(self, dens, x0):
+        dens_flatn = dens.flatten()
+        if np.any(dens<0): dens_flatn - dens.min() + 1
+        arg_ascend = np.argsort(dens_flatn)
+        thres = dens_flatn.size*(1-x0)
+        out = np.ones_like(dens_flatn)
+        mass  = 0
+        print('Running a brute force method for volume averaged ionization.')
+        for i in arg_ascend:
+            mass = mass+1
+            if mass>thres: break
+            out[i] = 0
+        out = out.reshape(dens.shape)
+        print('Ionisation fractions: %.3f (vol avg), %.3f (mass avg)'%(out.mean(),(out*dens/dens.mean()).mean()))
+        return out
+    """
+    def xi_volume_average(self, dens, x0):
         dens_flatn = dens.flatten() 
         arg_ascend = np.argsort(dens_flatn)
-        out = np.zeros_like(dens_flatn)
-        out[arg_ascend>=xi*dens_flatn.size] = 1
+        out = np.ones_like(dens_flatn)
+        out[arg_ascend<=(1-x0)*dens_flatn.size] = 0
+        print('Ionisation fractions: %.3f (vol avg), %.3f (mass avg)'%(out.mean(),(out*dens/dens.mean()).mean()))
         return out.reshape(dens.shape)
+    """
 
     def run_sim(self, zs=None, volume_averaged=False, mass_averaged=True):
         if zs is not None: 
@@ -165,14 +185,35 @@ class OutsideIn:
             mass = mass+dens_flatn[i]
             if mass>thres: break
             out[i] = 0
-        return out.reshape(dens.shape)
+        out = out.reshape(dens.shape)
+        print('Ionisation fractions: %.3f (vol avg), %.3f (mass avg)'%(out.mean(),(out*dens/dens.mean()).mean()))
+        return out
 
+    def xi_volume_average(self, dens, xi):
+        dens_flatn = dens.flatten()
+        if np.any(dens<0): dens_flatn - dens.min() + 1
+        arg_ascend = np.argsort(-dens_flatn)
+        thres = dens_flatn.size*(1-xi)
+        out = np.ones_like(dens_flatn)
+        mass  = 0
+        print('Running a brute force method for volume averaged ionization.')
+        for i in arg_ascend:
+            mass = mass+1
+            if mass>thres: break
+            out[i] = 0
+        out = out.reshape(dens.shape)
+        print('Ionisation fractions: %.3f (vol avg), %.3f (mass avg)'%(out.mean(),(out*dens/dens.mean()).mean()))
+        return out
+    """
     def xi_volume_average(self, dens, xi):
         dens_flatn = dens.flatten() 
         arg_ascend = np.argsort(-dens_flatn)
         out = np.zeros_like(dens_flatn)
-        out[arg_ascend>=xi*dens_flatn.size] = 1
-        return out.reshape(dens.shape)
+        out[arg_ascend<=xi*dens_flatn.size] = 1
+        out = out.reshape(dens.shape)
+        print('Ionisation fractions: %.3f (vol avg), %.3f (mass avg)'%(out.mean(),(out*dens/dens.mean()).mean()))
+        return out
+    """
 
     def run_sim(self, zs=None, volume_averaged=False, mass_averaged=True):
         if zs is not None: 
