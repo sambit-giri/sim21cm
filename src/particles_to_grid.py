@@ -3,7 +3,7 @@ from sklearn.neighbors import KDTree, NearestNeighbors
 import pandas as pd
 
 class ParticleToGrid:
-	def __init__(nGrid=100, box_len=256, position=None, scheme='NGP', leaf_size=100, metric='minkowski'):
+	def __init__(self, nGrid=100, box_len=256, position=None, scheme='NGP', leaf_size=100, metric='minkowski'):
 		assert scheme in ['NGP', 'CIC', 'spline']
 
 		self.nGrid = nGrid
