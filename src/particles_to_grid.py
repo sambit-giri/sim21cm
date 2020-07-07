@@ -35,6 +35,7 @@ class ParticleToGrid:
 
 		print('Building tree...')
 		self.tree = KDTree(X, leaf_size=self.leaf_size, metric=self.metric)
+		print('Tree built with the positions.')
 
 	def to_grid(self, nGrid=None, box_len=None, scheme=None):
 		if scheme is not None: self.scheme = scheme
