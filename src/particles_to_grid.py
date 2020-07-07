@@ -1,6 +1,7 @@
 import numpy as np 
 from sklearn.neighbors import KDTree, NearestNeighbors
 import pandas as pd
+from time import time
 
 class ParticleToGrid:
 	def __init__(self, nGrid=100, box_len=256, position=None, scheme='NGP', leaf_size=100, metric='minkowski'):
@@ -61,6 +62,9 @@ def _NGP(nGrid, tree):
 	#	data_grid[ii] = len(ri)
 
 	dGrid = 1/(nGrid+1)
+	count, count_tot = 0, np.product(data_grid.shape)
+	tstart = time()
+	percent_past, percent = 0, 0
 
 	for ii in range(data_grid.shape[0]):
 		for ji in range(data_grid.shape[1]):
@@ -68,6 +72,11 @@ def _NGP(nGrid, tree):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid/2, return_distance=True)
 				data_grid[ii,ji,ki] = len(yr[0][yr[0]<dGrid/2]) + 0.5*len(yr[0][yr[0]==dGrid/2])
+				count += 1
+				percent_past, percent = percent, 100*count/count_tot
+				if (percent_past%10)>(percent%10):
+					tend = time()
+					print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	return data_grid
 
@@ -76,15 +85,24 @@ def _CIC(nGrid, tree, periodic=True):
 	X = tree.get_arrays()[0]
 	dGrid = 1/nGrid
 
+	count, count_tot = 0, np.product(data_grid.shape)+1
+	tstart = time()
+	percent_past, percent = 0, 0
+
 	for ii in range(data_grid.shape[0]):
 		for ji in range(data_grid.shape[1]):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[ii,ji,ki] = np.sum(1-yr[0]/dGrid)
+				count += 1
+				percent_past, percent = percent, 100*count/count_tot
+				if (percent_past%10)>(percent%10):
+					tend = time()
+					print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	if periodic:
-		print('The grid is period.')
+		print('The grid is periodic.')
 		## axis=0
 		ii = -1
 		for ji in range(data_grid.shape[1]):
@@ -124,6 +142,9 @@ def _CIC(nGrid, tree, periodic=True):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[ii,ji,0] += np.sum(1-yr[0]/dGrid)
+
+	tend = time()
+	print('Completed 100 % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	return data_grid
 
