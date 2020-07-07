@@ -12,7 +12,7 @@ class ParticleToGrid:
 		self.position = position
 		self.leaf_size = leaf_size
 		self.metric = metric
-		self.particle_position(leaf_size=self.leaf_size, metric=self.metric)
+		self.particle_position(leaf_size=self.leaf_size, metric=self.metric, position=position)
 
 	def particle_position(self, position=None, leaf_size=None, metric=None, position_min=None, position_max=None):
 		if leaf_size is not None: self.leaf_size = leaf_size
