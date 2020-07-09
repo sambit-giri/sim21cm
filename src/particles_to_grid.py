@@ -166,6 +166,10 @@ def _TSC(nGrid, tree, periodic=False):
 	X = tree.get_arrays()[0]
 	dGrid = 1/nGrid
 
+	count, count_tot = 0, np.product(data_grid.shape)+1
+	tstart = time()
+	percent_past, percent = 0, 0
+
 	for ii in range(data_grid.shape[0]):
 		for ji in range(data_grid.shape[1]):
 			for ki in range(data_grid.shape[2]):
@@ -248,6 +252,10 @@ def _PCS(nGrid, tree, periodic=False):
 	data_grid = np.zeros((nGrid,nGrid,nGrid))
 	X = tree.get_arrays()[0]
 	dGrid = 1/nGrid
+
+	count, count_tot = 0, np.product(data_grid.shape)+1
+	tstart = time()
+	percent_past, percent = 0, 0
 
 	for ii in range(data_grid.shape[0]):
 		for ji in range(data_grid.shape[1]):
