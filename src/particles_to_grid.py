@@ -4,8 +4,13 @@ import pandas as pd
 from time import time
 
 class ParticleToGrid:
+	"""
+	For detail description see Sefusatti et al. (2016; https://arxiv.org/abs/1512.07295).
+	This reference also describes the interlacing method, which can reduce the aliasing effect.
+	We will include it in the future.
+	"""
 	def __init__(self, nGrid=100, box_len=256, position=None, scheme='NGP', leaf_size=100, metric='minkowski'):
-		assert scheme in ['NGP', 'CIC', 'spline']
+		assert scheme in ['NGP', 'CIC', 'TSC', 'PCS']
 
 		self.nGrid = nGrid
 		self.box_len = box_len
@@ -45,6 +50,11 @@ class ParticleToGrid:
 
 		if self.scheme=='NGP': data_grid = _NGP(self.nGrid, self.tree)
 		elif self.scheme=='CIC': data_grid = _CIC(self.nGrid, self.tree)
+		elif self.scheme=='TSC': data_grid = _TSC(self.nGrid, self.tree)
+		elif self.scheme=='PCS': data_grid = _PCS(self.nGrid, self.tree)
+		else: 
+			print('Choose from the implemented interpolation schemes:')
+			print('NGP', 'CIC', 'TSC', 'PCS')
 
 		return data_grid
 
@@ -102,7 +112,7 @@ def _CIC(nGrid, tree, periodic=True):
 					print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	if periodic:
-		print('The grid is periodic.')
+		#print('The grid is periodic.')
 		## axis=0
 		ii = -1
 		for ji in range(data_grid.shape[1]):
@@ -142,6 +152,7 @@ def _CIC(nGrid, tree, periodic=True):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[ii,ji,0] += np.sum(1-yr[0]/dGrid)
+	else: print('The grid is not periodic.')
 
 	tend = time()
 	print('Completed 100 % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
@@ -153,15 +164,100 @@ def _TSC(nGrid, tree, periodic=False):
 	#### Not tested or finalised this method.
 	data_grid = np.zeros((nGrid,nGrid,nGrid))
 	X = tree.get_arrays()[0]
-	dGrid = 1/(nGrid+1)
+	dGrid = 1/nGrid
 
 	for ii in range(data_grid.shape[0]):
 		for ji in range(data_grid.shape[1]):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
-				yidx1, yr1 = tree.query_radius(Xq*dGrid+dGrid/2, dGrid/2, return_distance=True)
-				yidx2, yr2 = tree.query_radius(Xq*dGrid+dGrid/2, 3*dGrid/2, return_distance=True)
-				data_grid[ii,ji,ki] = np.sum(3/4-(yr1[0]/dGrid)**2)+0.5*np.sum((3/2-yr1[0][yidx2[0]!=yidx1[0]]/dGrid)**2)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 3*dGrid/2, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<0.5]
+				s2 = sr[(sr>=0.5)*(sr<1.5)]
+				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+
+	if periodic:
+		#print('The grid is period.')
+		## axis=0
+		ii = -1
+		for ji in range(data_grid.shape[1]):
+			for ki in range(data_grid.shape[2]):
+				Xq = np.array([ii,ji,ki]).reshape(1,3)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 3*dGrid/2, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<0.5]
+				s2 = sr[(sr>=0.5)*(sr<1.5)]
+				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+		ii = data_grid.shape[0]
+		for ji in range(data_grid.shape[1]):
+			for ki in range(data_grid.shape[2]):
+				Xq = np.array([ii,ji,ki]).reshape(1,3)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 3*dGrid/2, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<0.5]
+				s2 = sr[(sr>=0.5)*(sr<1.5)]
+				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+		## axis=1
+		ji = -1
+		for ii in range(data_grid.shape[0]):
+			for ki in range(data_grid.shape[2]):
+				Xq = np.array([ii,ji,ki]).reshape(1,3)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 3*dGrid/2, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<0.5]
+				s2 = sr[(sr>=0.5)*(sr<1.5)]
+				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+		ji = data_grid.shape[1]
+		for ii in range(data_grid.shape[0]):
+			for ki in range(data_grid.shape[2]):
+				Xq = np.array([ii,ji,ki]).reshape(1,3)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 3*dGrid/2, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<0.5]
+				s2 = sr[(sr>=0.5)*(sr<1.5)]
+				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+		## axis=2
+		ki = -1
+		for ii in range(data_grid.shape[0]):
+			for ji in range(data_grid.shape[1]):
+				Xq = np.array([ii,ji,ki]).reshape(1,3)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 3*dGrid/2, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<0.5]
+				s2 = sr[(sr>=0.5)*(sr<1.5)]
+				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+		ki = data_grid.shape[2]
+		for ii in range(data_grid.shape[0]):
+			for ji in range(data_grid.shape[1]):
+				Xq = np.array([ii,ji,ki]).reshape(1,3)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 3*dGrid/2, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<0.5]
+				s2 = sr[(sr>=0.5)*(sr<1.5)]
+				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+	else: print('The grid is not periodic.')
+
+	tend = time()
+	print('Completed 100 % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
+
+	return data_grid
+
+
+def _PCS(nGrid, tree, periodic=False):
+	#### Not tested or finalised this method.
+	data_grid = np.zeros((nGrid,nGrid,nGrid))
+	X = tree.get_arrays()[0]
+	dGrid = 1/nGrid
+
+	for ii in range(data_grid.shape[0]):
+		for ji in range(data_grid.shape[1]):
+			for ki in range(data_grid.shape[2]):
+				Xq = np.array([ii,ji,ki]).reshape(1,3)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 2*dGrid, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<1]
+				s2 = sr[(sr>=1)*(sr<2)]
+				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 
 	if periodic:
 		print('The grid is period.')
@@ -170,39 +266,61 @@ def _TSC(nGrid, tree, periodic=False):
 		for ji in range(data_grid.shape[1]):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
-				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-				data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 2*dGrid, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<1]
+				s2 = sr[(sr>=1)*(sr<2)]
+				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 		ii = data_grid.shape[0]
 		for ji in range(data_grid.shape[1]):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
-				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-				data_grid[0,ji,ki] += np.sum(1-yr[0]/dGrid)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 2*dGrid, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<1]
+				s2 = sr[(sr>=1)*(sr<2)]
+				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 		## axis=1
 		ji = -1
 		for ii in range(data_grid.shape[0]):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
-				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-				data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 2*dGrid, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<1]
+				s2 = sr[(sr>=1)*(sr<2)]
+				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 		ji = data_grid.shape[1]
 		for ii in range(data_grid.shape[0]):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
-				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-				data_grid[ii,0,ki] += np.sum(1-yr[0]/dGrid)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 2*dGrid, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<1]
+				s2 = sr[(sr>=1)*(sr<2)]
+				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 		## axis=2
 		ki = -1
 		for ii in range(data_grid.shape[0]):
 			for ji in range(data_grid.shape[1]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
-				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-				data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 2*dGrid, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<1]
+				s2 = sr[(sr>=1)*(sr<2)]
+				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 		ki = data_grid.shape[2]
 		for ii in range(data_grid.shape[0]):
 			for ji in range(data_grid.shape[1]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
-				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-				data_grid[ii,ji,0] += np.sum(1-yr[0]/dGrid)
+				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, 2*dGrid, return_distance=True)
+				sr = yr[0]/dGrid
+				s1 = sr[sr<1]
+				s2 = sr[(sr>=1)*(sr<2)]
+				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
+	else: print('The grid is not periodic.')
+
+	tend = time()
+	print('Completed 100 % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	return data_grid
