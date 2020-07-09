@@ -155,7 +155,7 @@ def _CIC(nGrid, tree, periodic=True):
 	else: print('The grid is not periodic.')
 
 	tend = time()
-	print('Completed 100 % in {1:.2f} minutes.'.format((tend-tstart)/60))
+	print('Completed 100 % in {0:.2f} minutes.'.format((tend-tstart)/60))
 
 	return data_grid
 
@@ -179,6 +179,11 @@ def _TSC(nGrid, tree, periodic=False):
 				s1 = sr[sr<0.5]
 				s2 = sr[(sr>=0.5)*(sr<1.5)]
 				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+				count += 1
+				percent_past, percent = percent, 100*count/count_tot
+				if (percent_past%10)>(percent%10):
+					tend = time()
+					print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	if periodic:
 		#print('The grid is period.')
@@ -242,7 +247,7 @@ def _TSC(nGrid, tree, periodic=False):
 	else: print('The grid is not periodic.')
 
 	tend = time()
-	print('Completed 100 % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
+	print('Completed 100 % in {0:.2f} minutes.'.format((tend-tstart)/60))
 
 	return data_grid
 
@@ -266,6 +271,11 @@ def _PCS(nGrid, tree, periodic=False):
 				s1 = sr[sr<1]
 				s2 = sr[(sr>=1)*(sr<2)]
 				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
+				count += 1
+				percent_past, percent = percent, 100*count/count_tot
+				if (percent_past%10)>(percent%10):
+					tend = time()
+					print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	if periodic:
 		#print('The grid is period.')
@@ -329,6 +339,6 @@ def _PCS(nGrid, tree, periodic=False):
 	else: print('The grid is not periodic.')
 
 	tend = time()
-	print('Completed 100 % in {1:.2f} minutes.'.format((tend-tstart)/60))
+	print('Completed 100 % in {0:.2f} minutes.'.format((tend-tstart)/60))
 
 	return data_grid
