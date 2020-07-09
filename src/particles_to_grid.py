@@ -196,7 +196,7 @@ def _TSC(nGrid, tree, periodic=False):
 				sr = yr[0]/dGrid
 				s1 = sr[sr<0.5]
 				s2 = sr[(sr>=0.5)*(sr<1.5)]
-				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+				data_grid[0,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
 		## axis=1
 		ji = -1
 		for ii in range(data_grid.shape[0]):
@@ -215,7 +215,7 @@ def _TSC(nGrid, tree, periodic=False):
 				sr = yr[0]/dGrid
 				s1 = sr[sr<0.5]
 				s2 = sr[(sr>=0.5)*(sr<1.5)]
-				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+				data_grid[ii,0,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
 		## axis=2
 		ki = -1
 		for ii in range(data_grid.shape[0]):
@@ -234,7 +234,7 @@ def _TSC(nGrid, tree, periodic=False):
 				sr = yr[0]/dGrid
 				s1 = sr[sr<0.5]
 				s2 = sr[(sr>=0.5)*(sr<1.5)]
-				data_grid[ii,ji,ki] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
+				data_grid[ii,ji,0] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
 	else: print('The grid is not periodic.')
 
 	tend = time()
@@ -260,7 +260,7 @@ def _PCS(nGrid, tree, periodic=False):
 				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 
 	if periodic:
-		print('The grid is period.')
+		#print('The grid is period.')
 		## axis=0
 		ii = -1
 		for ji in range(data_grid.shape[1]):
@@ -279,7 +279,7 @@ def _PCS(nGrid, tree, periodic=False):
 				sr = yr[0]/dGrid
 				s1 = sr[sr<1]
 				s2 = sr[(sr>=1)*(sr<2)]
-				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
+				data_grid[0,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 		## axis=1
 		ji = -1
 		for ii in range(data_grid.shape[0]):
@@ -298,7 +298,7 @@ def _PCS(nGrid, tree, periodic=False):
 				sr = yr[0]/dGrid
 				s1 = sr[sr<1]
 				s2 = sr[(sr>=1)*(sr<2)]
-				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
+				data_grid[ii,0,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 		## axis=2
 		ki = -1
 		for ii in range(data_grid.shape[0]):
@@ -317,7 +317,7 @@ def _PCS(nGrid, tree, periodic=False):
 				sr = yr[0]/dGrid
 				s1 = sr[sr<1]
 				s2 = sr[(sr>=1)*(sr<2)]
-				data_grid[ii,ji,ki] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
+				data_grid[ii,ji,0] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
 	else: print('The grid is not periodic.')
 
 	tend = time()
