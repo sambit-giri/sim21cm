@@ -155,7 +155,7 @@ def _CIC(nGrid, tree, periodic=True):
 	else: print('The grid is not periodic.')
 
 	tend = time()
-	print('Completed 100 % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
+	print('Completed 100 % in {1:.2f} minutes.'.format((tend-tstart)/60))
 
 	return data_grid
 
@@ -321,6 +321,6 @@ def _PCS(nGrid, tree, periodic=False):
 	else: print('The grid is not periodic.')
 
 	tend = time()
-	print('Completed 100 % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
+	print('Completed 100 % in {1:.2f} minutes.'.format((tend-tstart)/60))
 
 	return data_grid
