@@ -152,10 +152,11 @@ def _CIC(nGrid, tree, periodic=True):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[ii,ji,0] += np.sum(1-yr[0]/dGrid)
-	else: print('The grid is not periodic.')
 
 	tend = time()
 	print('Completed 100 % in {0:.2f} minutes.'.format((tend-tstart)/60))
+
+	if not periodic: print('The grid is not periodic.')
 
 	return data_grid
 
@@ -244,10 +245,11 @@ def _TSC(nGrid, tree, periodic=False):
 				s1 = sr[sr<0.5]
 				s2 = sr[(sr>=0.5)*(sr<1.5)]
 				data_grid[ii,ji,0] = np.sum(3/4-s1**2)+np.sum(0.5*(3/2-s2)**2)
-	else: print('The grid is not periodic.')
 
 	tend = time()
 	print('Completed 100 % in {0:.2f} minutes.'.format((tend-tstart)/60))
+
+	if not periodic: print('The grid is not periodic.')
 
 	return data_grid
 
@@ -336,9 +338,10 @@ def _PCS(nGrid, tree, periodic=False):
 				s1 = sr[sr<1]
 				s2 = sr[(sr>=1)*(sr<2)]
 				data_grid[ii,ji,0] = np.sum((1/6)*(4-6*s1**2+3*s1**3))+np.sum((1/6)*(2-s2)**3)
-	else: print('The grid is not periodic.')
 
 	tend = time()
 	print('Completed 100 % in {0:.2f} minutes.'.format((tend-tstart)/60))
+
+	if not periodic: print('The grid is not periodic.')
 
 	return data_grid
