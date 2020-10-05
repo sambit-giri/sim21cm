@@ -1,6 +1,6 @@
 import numpy as np
 import tools21cm as c2t
-import usefuls
+from . import usefuls
 
 def sem_num(dens_cube, sourcelist, z, Nion=30, Nrec=0, Rmfp=10, boxsize=None):
 	"""
