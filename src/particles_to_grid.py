@@ -81,17 +81,17 @@ def _NGP(nGrid, tree):
 	tstart = time()
 	percent_past, percent = 0, 0
 
-	for ii in range(data_grid.shape[0]):
+	for ii in tqdm(range(data_grid.shape[0])):
 		for ji in range(data_grid.shape[1]):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid/2, return_distance=True)
 				data_grid[ii,ji,ki] = len(yr[0][yr[0]<dGrid/2]) + 0.5*len(yr[0][yr[0]==dGrid/2])
-				count += 1
-				percent_past, percent = percent, 100*count/count_tot
-				if (percent_past%10)>(percent%10):
-					tend = time()
-					print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
+				# count += 1
+				# percent_past, percent = percent, 100*count/count_tot
+				# if (percent_past%10)>(percent%10):
+				# 	tend = time()
+				# 	print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	return data_grid
 
@@ -117,42 +117,42 @@ def _CIC(nGrid, tree, periodic=True):
 					print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	if periodic:
-		#print('The grid is periodic.')
+		print('Estimating contribution from periodicty.')
 		## axis=0
 		ii = -1
-		for ji in range(data_grid.shape[1]):
+		for ji in tqdm(range(data_grid.shape[1])):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
 		ii = data_grid.shape[0]
-		for ji in range(data_grid.shape[1]):
+		for ji in tqdm(range(data_grid.shape[1])):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[0,ji,ki] += np.sum(1-yr[0]/dGrid)
 		## axis=1
 		ji = -1
-		for ii in range(data_grid.shape[0]):
+		for ii in tqdm(range(data_grid.shape[0])):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
 		ji = data_grid.shape[1]
-		for ii in range(data_grid.shape[0]):
+		for ii in tqdm(range(data_grid.shape[0])):
 			for ki in range(data_grid.shape[2]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[ii,0,ki] += np.sum(1-yr[0]/dGrid)
 		## axis=2
 		ki = -1
-		for ii in range(data_grid.shape[0]):
+		for ii in tqdm(range(data_grid.shape[0])):
 			for ji in range(data_grid.shape[1]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 				data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
 		ki = data_grid.shape[2]
-		for ii in range(data_grid.shape[0]):
+		for ii in tqdm(range(data_grid.shape[0])):
 			for ji in range(data_grid.shape[1]):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
@@ -174,18 +174,19 @@ def _CIC_njobs(nGrid, tree, periodic=True, n_jobs=2):
 	tstart = time()
 	percent_past, percent = 0, 0
 
-	def loop_ijk():
+	def loop_ijk(ii,ji,ki):
 		Xq = np.array([ii,ji,ki]).reshape(1,3)
 		yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 		data_grid[ii,ji,ki] = np.sum(1-yr[0]/dGrid)
 
+	Parallel(n_jobs=n_jobs)(delayed(loop_ijk)(ii,ji,ki) for ii in tqdm(range(data_grid.shape[0])) for ji in range(data_grid.shape[1]) for ki in range(data_grid.shape[2]))
 
-	for ii in range(data_grid.shape[0]):
-		for ji in range(data_grid.shape[1]):
-			for ki in range(data_grid.shape[2]):
-				Xq = np.array([ii,ji,ki]).reshape(1,3)
-				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-				data_grid[ii,ji,ki] = np.sum(1-yr[0]/dGrid)
+	# for ii in range(data_grid.shape[0]):
+	# 	for ji in range(data_grid.shape[1]):
+	# 		for ki in range(data_grid.shape[2]):
+	# 			Xq = np.array([ii,ji,ki]).reshape(1,3)
+	# 			yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
+	# 			data_grid[ii,ji,ki] = np.sum(1-yr[0]/dGrid)
 				# count += 1
 				# percent_past, percent = percent, 100*count/count_tot
 				# if (percent_past%10)>(percent%10):
