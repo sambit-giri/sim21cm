@@ -54,7 +54,7 @@ class ParticleToGrid:
 		if box_len is not None: self.box_len = box_len
 
 		if self.scheme=='NGP': data_grid = _NGP(self.nGrid, self.tree)
-		elif self.scheme=='CIC': data_grid = _CIC(self.nGrid, self.tree, periodic=self.periodic)
+		elif self.scheme=='CIC': data_grid = _CIC(self.nGrid, self.tree, periodic=self.periodic) if self.n_jobs<=1 else _CIC_njobs(self.nGrid, self.tree, periodic=self.periodic, n_jobs=self.n_jobs) 
 		elif self.scheme=='TSC': data_grid = _TSC(self.nGrid, self.tree, periodic=self.periodic)
 		elif self.scheme=='PCS': data_grid = _PCS(self.nGrid, self.tree, periodic=self.periodic)
 		else: 
