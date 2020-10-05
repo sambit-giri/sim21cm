@@ -4,6 +4,7 @@ import pandas as pd
 from time import time
 
 from joblib import Parallel, delayed  
+from joblib.externals.loky import set_loky_pickler
 from tqdm import tqdm  
 
 class ParticleToGrid:
@@ -174,14 +175,16 @@ def _CIC_njobs(nGrid, tree, periodic=True, n_jobs=2):
 	tstart = time()
 	percent_past, percent = 0, 0
 
+	@delayed
+	@wrap_non_picklable_objects
 	def loop_ijk(ii,ji,ki,tree):
 		Xq = np.array([ii,ji,ki]).reshape(1,3)
 		yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
 		return np.sum(1-yr[0]/dGrid)
 
 	arg_list = np.array([[ii,ji,ki] for ii in tqdm(range(data_grid.shape[0])) for ji in range(data_grid.shape[1]) for ki in range(data_grid.shape[2])])
-	#out_list = Parallel(n_jobs=n_jobs)(delayed(loop_ijk)(21, large_list) for _ in range(1))
-	out_list = Parallel(n_jobs=n_jobs)(delayed(loop_ijk)(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
+	out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
+	# out_list = Parallel(n_jobs=n_jobs)(delayed(loop_ijk)(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
 	data_grid[arg_list[:,0],arg_list[:,1],arg_list[:,2]] = np.array(out_list)
 
 	# for ii in range(data_grid.shape[0]):
