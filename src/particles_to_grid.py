@@ -5,6 +5,8 @@ from time import time
 
 from joblib import Parallel, delayed  
 from joblib.externals.loky import set_loky_pickler
+from joblib import wrap_non_picklable_objects
+
 from tqdm import tqdm  
 
 class ParticleToGrid:
