@@ -216,7 +216,7 @@ def _CIC_njobs(nGrid, tree, periodic=True, n_jobs=2):
 		ii = data_grid.shape[0]
 		arg_list = np.array([[ii,ji,ki] for ji in range(data_grid.shape[1]) for ki in range(data_grid.shape[2])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
-		data_grid[arg_list[:,0],arg_list[:,1],arg_list[:,2]] += np.array(out_list)
+		data_grid[arg_list[:,0]%data_grid.shape[0],arg_list[:,1]%data_grid.shape[1],arg_list[:,2]%data_grid.shape[2]] += np.array(out_list)
 		# for ji in range(data_grid.shape[1]):
 		# 	for ki in range(data_grid.shape[2]):
 		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
@@ -235,7 +235,7 @@ def _CIC_njobs(nGrid, tree, periodic=True, n_jobs=2):
 		ji = data_grid.shape[1]
 		arg_list = np.array([[ii,ji,ki] for ii in range(data_grid.shape[0]) for ki in range(data_grid.shape[2])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
-		data_grid[arg_list[:,0],arg_list[:,1],arg_list[:,2]] += np.array(out_list)
+		data_grid[arg_list[:,0]%data_grid.shape[0],arg_list[:,1]%data_grid.shape[1],arg_list[:,2]%data_grid.shape[2]] += np.array(out_list)
 		# for ii in range(data_grid.shape[0]):
 		# 	for ki in range(data_grid.shape[2]):
 		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
@@ -254,7 +254,7 @@ def _CIC_njobs(nGrid, tree, periodic=True, n_jobs=2):
 		ki = data_grid.shape[2]
 		arg_list = np.array([[ii,ji,ki] for ii in range(data_grid.shape[0]) for ji in range(data_grid.shape[1])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
-		data_grid[arg_list[:,0],arg_list[:,1],arg_list[:,2]] += np.array(out_list)
+		data_grid[arg_list[:,0]%data_grid.shape[0],arg_list[:,1]%data_grid.shape[1],arg_list[:,2]%data_grid.shape[2]] += np.array(out_list)
 		# for ii in range(data_grid.shape[0]):
 		# 	for ji in range(data_grid.shape[1]):
 		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
