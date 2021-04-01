@@ -72,13 +72,6 @@ class ParticleToGrid:
 
 def _NGP(nGrid, tree):
 	data_grid = np.zeros((nGrid,nGrid,nGrid))
-	#Xi = np.indices((nGrid,nGrid,nGrid)).reshape(3, nGrid*nGrid*nGrid).T
-	#Xq = (Xi+0.5)/nGrid
-
-	#yidx, yr = tree.query_radius(Xq, 1/nGrid/2, return_distance=True)
-
-	#for ii, ri in zip(Xi,yr):
-	#	data_grid[ii] = len(ri)
 
 	dGrid = 1/(nGrid+1)
 	count, count_tot = 0, np.product(data_grid.shape)
@@ -91,11 +84,6 @@ def _NGP(nGrid, tree):
 				Xq = np.array([ii,ji,ki]).reshape(1,3)
 				yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid/2, return_distance=True)
 				data_grid[ii,ji,ki] = len(yr[0][yr[0]<dGrid/2]) + 0.5*len(yr[0][yr[0]==dGrid/2])
-				# count += 1
-				# percent_past, percent = percent, 100*count/count_tot
-				# if (percent_past%10)>(percent%10):
-				# 	tend = time()
-				# 	print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
 
 	return data_grid
 
@@ -190,18 +178,6 @@ def _CIC_njobs(nGrid, tree, periodic=True, n_jobs=2):
 	# out_list = Parallel(n_jobs=n_jobs)(delayed(loop_ijk)(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
 	data_grid[arg_list[:,0],arg_list[:,1],arg_list[:,2]] = np.array(out_list)
 
-	# for ii in range(data_grid.shape[0]):
-	# 	for ji in range(data_grid.shape[1]):
-	# 		for ki in range(data_grid.shape[2]):
-	# 			Xq = np.array([ii,ji,ki]).reshape(1,3)
-	# 			yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-	# 			data_grid[ii,ji,ki] = np.sum(1-yr[0]/dGrid)
-				# count += 1
-				# percent_past, percent = percent, 100*count/count_tot
-				# if (percent_past%10)>(percent%10):
-				# 	tend = time()
-				# 	print('Completed {0:.1f} % in {1:.2f} minutes.'.format(percent,(tend-tstart)/60))
-
 	if periodic:
 		print('Estimating contribution from periodicty.')
 		## axis=0
@@ -209,58 +185,33 @@ def _CIC_njobs(nGrid, tree, periodic=True, n_jobs=2):
 		arg_list = np.array([[ii,ji,ki] for ji in range(data_grid.shape[1]) for ki in range(data_grid.shape[2])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
 		data_grid[arg_list[:,0],arg_list[:,1],arg_list[:,2]] += np.array(out_list)
-		# for ji in range(data_grid.shape[1]):
-		# 	for ki in range(data_grid.shape[2]):
-		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
-		# 		yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-		# 		data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
+
 		ii = data_grid.shape[0]
 		arg_list = np.array([[ii,ji,ki] for ji in range(data_grid.shape[1]) for ki in range(data_grid.shape[2])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
 		data_grid[arg_list[:,0]%data_grid.shape[0],arg_list[:,1]%data_grid.shape[1],arg_list[:,2]%data_grid.shape[2]] += np.array(out_list)
-		# for ji in range(data_grid.shape[1]):
-		# 	for ki in range(data_grid.shape[2]):
-		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
-		# 		yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-		# 		data_grid[0,ji,ki] += np.sum(1-yr[0]/dGrid)
+
 		## axis=1
 		ji = -1
 		arg_list = np.array([[ii,ji,ki] for ii in range(data_grid.shape[0]) for ki in range(data_grid.shape[2])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
 		data_grid[arg_list[:,0],arg_list[:,1],arg_list[:,2]] += np.array(out_list)
-		# for ii in range(data_grid.shape[0]):
-		# 	for ki in range(data_grid.shape[2]):
-		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
-		# 		yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-		# 		data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
+
 		ji = data_grid.shape[1]
 		arg_list = np.array([[ii,ji,ki] for ii in range(data_grid.shape[0]) for ki in range(data_grid.shape[2])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
 		data_grid[arg_list[:,0]%data_grid.shape[0],arg_list[:,1]%data_grid.shape[1],arg_list[:,2]%data_grid.shape[2]] += np.array(out_list)
-		# for ii in range(data_grid.shape[0]):
-		# 	for ki in range(data_grid.shape[2]):
-		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
-		# 		yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-		# 		data_grid[ii,0,ki] += np.sum(1-yr[0]/dGrid)
+
 		## axis=2
 		ki = -1
 		arg_list = np.array([[ii,ji,ki] for ii in range(data_grid.shape[0]) for ji in range(data_grid.shape[1])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
 		data_grid[arg_list[:,0],arg_list[:,1],arg_list[:,2]] += np.array(out_list)
-		# for ii in range(data_grid.shape[0]):
-		# 	for ji in range(data_grid.shape[1]):
-		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
-		# 		yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-		# 		data_grid[ii,ji,ki] += np.sum(1-yr[0]/dGrid)
+
 		ki = data_grid.shape[2]
 		arg_list = np.array([[ii,ji,ki] for ii in range(data_grid.shape[0]) for ji in range(data_grid.shape[1])])
 		out_list = Parallel(n_jobs=n_jobs)(loop_ijk(ii,ji,ki,tree) for ii,ji,ki in tqdm(arg_list))
 		data_grid[arg_list[:,0]%data_grid.shape[0],arg_list[:,1]%data_grid.shape[1],arg_list[:,2]%data_grid.shape[2]] += np.array(out_list)
-		# for ii in range(data_grid.shape[0]):
-		# 	for ji in range(data_grid.shape[1]):
-		# 		Xq = np.array([ii,ji,ki]).reshape(1,3)
-		# 		yidx, yr = tree.query_radius(Xq*dGrid+dGrid/2, dGrid, return_distance=True)
-		# 		data_grid[ii,ji,0] += np.sum(1-yr[0]/dGrid)
 
 	tend = time()
 	print('Completed 100 % in {0:.2f} minutes.'.format((tend-tstart)/60))
