@@ -50,6 +50,7 @@ class FoF:
 		clustering.fit(self.pos_nbody)
 
 
+
 try:
 	from nbodykit.lab import BigFileCatalog
 	from nbodykit.lab import FOF
@@ -96,8 +97,8 @@ class FoF_nbodykit:
 
 		print('BoxSize', cat.attrs['boxsize'])
 		print('Nmesh', cat.attrs['Nmesh'])
-		print('Mass of a particle', M0/1e8, 'x1e8 solar mass.')
-		print('OmegaM', cosmo.Om0)
+		print('Mass of a particle', np.round(M0/1e8, decimals=3), 'x1e8 solar mass.')
+		print('OmegaM', np.round(self.cosmo.Om0, decimals=3))
 
 		print('Finding haloes...')
 		cat['Density'] = KDDensity(cat).density
