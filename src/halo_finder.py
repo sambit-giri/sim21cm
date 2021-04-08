@@ -67,7 +67,6 @@ class FoF_nbodykit:
 
 		self.cosmo = cosmo
 		self.filename_nbody = filename_nbody if type(filename_nbody) not in [str] else [filename_nbody]
-		self.pos_nbody = pos_nbody
 		self.box_len   = box_len
 		self.n_jobs = n_jobs
 		self.N_min  = N_min
