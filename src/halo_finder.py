@@ -58,7 +58,7 @@ class FoF_nbodykit:
 	'''
 	Using nbodykit.
 	'''
-	def __init__(self, filename_nbody=None, b=0.2, box_len=None, n_p=None, n_jobs=None, cosmo=None, N_min=20, z=None):
+	def __init__(self, filename_nbody=None, b=0.2, box_len=None, n_p=None, n_jobs=None, cosmo=None, N_min=20, zs=None):
 		from nbodykit.lab import BigFileCatalog
 		from nbodykit.lab import FOF
 		from nbodykit.lab import HaloCatalog
