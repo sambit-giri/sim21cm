@@ -95,10 +95,10 @@ class FoF_nbodykit:
 		self.M_p = M0
 		cat.attrs['BoxSize'] = cat.attrs['boxsize']
 
-		print('BoxSize', cat.attrs['boxsize'])
-		print('Nmesh', cat.attrs['Nmesh'])
-		print('Mass of a particle', np.round(M0/1e8, decimals=3), 'x1e8 solar mass.')
-		print('OmegaM', np.round(self.cosmo.Om0, decimals=3))
+		print('BoxSize:', cat.attrs['boxsize'], 'Mpc')
+		print('Nmesh:', cat.attrs['Nmesh'])
+		print('Mass of a particle:', np.round(M0/1e8, decimals=3), 'x 1e8 solar mass')
+		print('OmegaM:', np.round(self.cosmo.Om0, decimals=3))
 
 		print('Finding haloes...')
 		cat['Density'] = KDDensity(cat).density
@@ -106,11 +106,11 @@ class FoF_nbodykit:
 		features = fof.find_features(peakcolumn='Density') if with_peak else fof.find_features(peakcolumn=None)
 
 		halo_catalog = fof.to_halos(M0, self.cosmo, z)
-		print(halo_catalog)
+		# print(halo_catalog)
 		features['Mass'] = M0 * features['Length']
 
 		print('...done')
-		print('Total number of haloes found', halo_catalog.csize)
+		print('Total number of haloes found:', halo_catalog.csize)
 		# print('Saving columns', features.columns)
 		# print('halos', halo_catalog.columns)
 
