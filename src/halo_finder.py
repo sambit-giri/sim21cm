@@ -50,8 +50,13 @@ class FoF:
 		clustering.fit(self.pos_nbody)
 
 
-
-
+try:
+	from nbodykit.lab import BigFileCatalog
+	from nbodykit.lab import FOF
+	from nbodykit.lab import HaloCatalog
+	from nbodykit.lab import KDDensity
+except:
+	print('Install nbodykit to use FoF_nbodykit.')
 
 
 class FoF_nbodykit:
