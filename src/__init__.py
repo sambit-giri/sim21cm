@@ -10,3 +10,5 @@ For example:
 '''
 
 from . import *
+
+from . import halo_finder
