@@ -3,6 +3,7 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn import cluster
 from astropy import units, constants
 from .cosmo_calc import critical_density0
+from . import hmf
 
 def z2a(z): 
 	return 1/(1+z)
