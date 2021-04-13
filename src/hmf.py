@@ -11,10 +11,13 @@ from camb import model, initialpower
 def sigma2_fit(z=0, cosmo='Planck15'):
 	if type(cosmo)==str:
 		if cosmo.lower() in ['planck15']: cosmo = cosmology.Planck15
-		if cosmo.lower() in ['planck13']: cosmo = cosmology.Planck13
-		if cosmo.lower() in ['wmap9']: cosmo = cosmology.WMAP9
-		if cosmo.lower() in ['wmap7']: cosmo = cosmology.WMAP7
-		if cosmo.lower() in ['wmap5']: cosmo = cosmology.WMAP5
+		elif cosmo.lower() in ['planck13']: cosmo = cosmology.Planck13
+		elif cosmo.lower() in ['wmap9']: cosmo = cosmology.WMAP9
+		elif cosmo.lower() in ['wmap7']: cosmo = cosmology.WMAP7
+		elif cosmo.lower() in ['wmap5']: cosmo = cosmology.WMAP5
+		else:
+			print('Setting to Planck15 cosmology.')
+			cosmo = cosmology.Planck15
 	#Now get matter power spectra and sigma8 at redshift 0 and z
 	pars = camb.CAMBparams()
 	pars.set_cosmology(H0=cosmo.H0.value, ombh2=cosmo.Ob0*cosmo.h**2, omch2=cosmo.Om0*cosmo.h**2)
@@ -38,10 +41,13 @@ def sigma2_fit(z=0, cosmo='Planck15'):
 def Watson2013_fit(z=0, cosmo='Planck15', halo_finder='FoF'):
 	if type(cosmo)==str:
 		if cosmo.lower() in ['planck15']: cosmo = cosmology.Planck15
-		if cosmo.lower() in ['planck13']: cosmo = cosmology.Planck13
-		if cosmo.lower() in ['wmap9']: cosmo = cosmology.WMAP9
-		if cosmo.lower() in ['wmap7']: cosmo = cosmology.WMAP7
-		if cosmo.lower() in ['wmap5']: cosmo = cosmology.WMAP5
+		elif cosmo.lower() in ['planck13']: cosmo = cosmology.Planck13
+		elif cosmo.lower() in ['wmap9']: cosmo = cosmology.WMAP9
+		elif cosmo.lower() in ['wmap7']: cosmo = cosmology.WMAP7
+		elif cosmo.lower() in ['wmap5']: cosmo = cosmology.WMAP5
+		else:
+			print('Setting to Planck15 cosmology.')
+			cosmo = cosmology.Planck15
 	Az  = lambda z: cosmo.Om(z)*(0.990*(1+z)**-3.216+0.074)
 	alz = lambda z: cosmo.Om(z)*(5.907*(1+z)**-3.599+2.344)
 	bez = lambda z: cosmo.Om(z)*(3.136*(1+z)**-3.058+2.349)
