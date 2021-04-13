@@ -121,8 +121,10 @@ class FoF_nbodykit:
 		assert len(self.filename_nbody) == len(self.zs)
 		self.halo_catalogs = {}
 		for i in range(len(self.zs)):
-			halo_cat = self.find_haloes_epoch(self.filename_nbody[i], self.zs[i], N_min=N_min, with_peak=with_peak)
-			self.halo_catalogs['{:3f}'.format(self.zs[i])] = halo_cat
+			z0 = self.zs[i]
+			print('z = {:.3f}'.format(z0))
+			halo_cat = self.find_haloes_epoch(self.filename_nbody[i], z0, N_min=N_min, with_peak=with_peak)
+			self.halo_catalogs['{:.3f}'.format(z0)] = halo_cat
 
 
 
