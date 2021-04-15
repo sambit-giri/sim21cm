@@ -10,5 +10,6 @@ For example:
 '''
 
 from . import *
+from radtrans import * 
 
 from . import halo_finder
