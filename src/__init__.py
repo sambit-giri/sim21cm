@@ -9,6 +9,19 @@ For example:
 >>> help(s2c.calc_dt)
 '''
 
+
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except ImportError:
+    from importlib_metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version(__name__)
+except PackageNotFoundError:
+    # package is not installed
+    pass
+
+    
 from . import *
 from .radtrans import H_He_final, Source
 
