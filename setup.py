@@ -4,8 +4,8 @@ Created on 16 Apr 2020
 Setup script
 '''
 
-#from setuptools import setup, find_packages
-from distutils.core import setup
+from setuptools import setup, find_packages
+#from distutils.core import setup
 
 setup(name='sim21cm',
       version='0.0.1',
