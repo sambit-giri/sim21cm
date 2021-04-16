@@ -19,6 +19,7 @@ import dill
 from glob import glob
 import pickle
 
+__all__ = ['Source']
 
 # Initialize the units and conversion factors
 facr = 1 * u.Mpc
