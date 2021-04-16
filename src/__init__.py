@@ -21,8 +21,7 @@ except PackageNotFoundError:
     # package is not installed
     pass
 
-    
 from . import *
-from .radtrans import H_He_final, Source
+# from .radtrans import H_He_final, Source
 
-from . import halo_finder
+from . import halo_finder, RT_1D
