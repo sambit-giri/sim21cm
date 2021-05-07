@@ -47,8 +47,16 @@ kb = 1.380649 * 10 ** -23 * u.J / u.K
 kb = kb.to(u.erg / u.K)
 m_e = 9.10938 * 10 ** -28 * u.g
 sigma_s = 6.6524 * 10 ** -25 * u.cm ** 2
+M_sun = 1.988 * 10 ** 33 * u.g
+sec_per_year = 3600*24*365.25
 
-
+##Cosmology
+Om      = 0.31
+Ob      = 0.048
+Ol      = 1-Om-Ob
+h0      = 0.68
+ns      = 0.97
+s8      = 0.81
 
 
 # Photoionization and Recombination coefficients
@@ -321,7 +329,7 @@ def adaptive_mesh(r,x,lowtol,uptol):
     """
     return r_new
 
-def generate_table(M, z, r_grid, n_HI, n_HeI, alpha, sed, E_0, filename_table=None, recalculate_table=False):
+def generate_table(param, z, r_grid, n_HI, n_HeI, alpha, sed, E_0, filename_table=None, recalculate_table=False):
     '''
     Generate the interpolation tables for the integrals for the radiative transfer equations.
 
@@ -332,8 +340,7 @@ def generate_table(M, z, r_grid, n_HI, n_HeI, alpha, sed, E_0, filename_table=No
 
     Parameters
     ----------
-    M : float
-     Mass of the source.
+    param : dictionary with source parameters
     z : float
      Redshift of the source.
     r_grid : array_like
@@ -348,7 +355,7 @@ def generate_table(M, z, r_grid, n_HI, n_HeI, alpha, sed, E_0, filename_table=No
     E_0 : in eV, minimum energy of photons (depends on whether or not ionising photons get absorbed)
     alpha : int, default -1
      Spectral index for a power-law source.
-    sed : callable, optional
+    sed : callable, optional, or string
      Spectral energy distribution to be used instead of the default power-law function. sed is a function of energy.
     filename_table : str, optional
      Used to import a table and skip the calculation
@@ -373,23 +380,41 @@ def generate_table(M, z, r_grid, n_HI, n_HeI, alpha, sed, E_0, filename_table=No
 
     if recalculate_table:
         print('Creating table...')
-
-        L = 1.38 * 10 ** 37 * M
-        Ag = L / (4 * pi * facr ** 2 * (integrate.quad(lambda x: x ** -alpha, E_0, E_upp)[0]))
-
         r_min = r_grid[0]
         dr = r_grid[1] - r_grid[0]
+        if (param.source.type == 'Miniqsos'):  ### Choose the source type
+                M = param.source.M_miniqso
+                L = 1.38 * 10 ** 37 * M
+                Ag = L / (4 * pi * facr ** 2 * (integrate.quad(lambda x: x ** -alpha, E_0, E_upp)[0]))
+                                
+                # Spectral energy function, power law for a quasar source
+                def I(E):
+                        #if sed is not None: return sed(E)
+                        miniqsos = E ** -alpha
+                        return Ag * miniqsos
 
-        # Spectral energy function, power law for a quasar source
-        def I(E):
-            if sed is not None: return sed(E)
-            miniqsos = E ** -alpha
-            return Ag * miniqsos
+                #print(I(E_0),I(E_upp),I(E_0+ E_upp/4),L /(E_upp-E_0)*log(E_upp/E_0))
+                # Radiation flux times unit distance
+                def N(E, n_HI0, n_HeI0):
+            	        int = dr * facr * (n_HI0 * sigma_HI(E) + n_HeI0 * sigma_HeI(E))
+            	        return exp(-int) * I(E)
 
-        # Radiation flux times unit distance
-        def N(E, n_HI0, n_HeI0):
-            int = dr * facr * (n_HI0 * sigma_HI(E) + n_HeI0 * sigma_HeI(E))
-            return exp(-int) * I(E)
+        elif (param.source.type == 'Galaxies'):
+                f_c2ray = param.source.fc2ray
+                M = param.source.M_halo                
+                Delta_T = 10 ** 7 * sec_per_year
+                N_ion_dot = f_c2ray * M * M_sun /m_H * Ob/Om /Delta_T #### M_sun is in gramms
+                I__ =  N_ion_dot / (4 * pi * facr ** 2 * log(E_upp/E_0))
+                #print(I__, N_ion_dot)
+                def N(E, n_HI0, n_HeI0):
+            	        int = dr * facr * (n_HI0 * sigma_HI(E) + n_HeI0 * sigma_HeI(E)) 
+            	        return exp(-int) * I__ 	
+                
+
+        else :
+                print('Source Type not available')
+                exit()
+        E_values = logspace(log10(E_0),log10(E_upp),10,base=10)
 
         IHI_1 = zeros((n_HI.size, n_HeI.size))
         IHI_2 = zeros((n_HI.size, n_HeI.size))
@@ -413,7 +438,7 @@ def generate_table(M, z, r_grid, n_HI, n_HeI, alpha, sed, E_0, filename_table=No
 
                 IHI_1[k2, k3] = \
                 integrate.quad(lambda x: sigma_HI(x) / x * N(x, n_HI[k2], n_HeI[k3]), max(E_0, E_HI), E_upp)[0]
-
+			
                 IHI_2[k2, k3] = integrate.quad(
                     lambda x: sigma_HI(x) * (x - E_HI) / (E_HI * x) * N(x, n_HI[k2], n_HeI[k3]), max(E_0, E_HI),
                     E_upp)[0]
@@ -586,7 +611,7 @@ class Source:
      be changed whether or not a external table is available.
     """
 
-    def __init__(self, M, z, evol, r_start=None, r_end=None, dn = 50, LE=None, alpha=None, sed=None, lifetime=None,
+    def __init__(self, param, M, z, evol, r_start=None, r_end=None, dn = 50, LE=None, alpha=None, sed=None, lifetime=None,
                  filename_table=None,C = None, recalculate_table=False, import_table = True,import_profiles = False):
 		
         self.M = M  # mass of the quasar
@@ -609,7 +634,7 @@ class Source:
         self.import_table = import_table
         self.C = C if C is not None else 1. # Clumping factor
 
-    def create_table(self, par=None, filename=None):
+    def create_table(self, param, par=None, filename=None):
         """
         Call the function to create the interpolation tables.
 
@@ -646,14 +671,14 @@ class Source:
                 print('Table for alpha =',alpha,'available and read in.')
             else:
                 E_0_ = E_0 ###eV, ionising photons have an influence on the IGM
-                Gamma_grid_info = generate_table(M, z_reion, r_grid, n_HI, n_HeI, alpha, sed, E_0_)
+                Gamma_grid_info = generate_table(param, z_reion, r_grid, n_HI, n_HeI, alpha, sed, E_0_)
         else:
             if alpha in alphas_nouv and self.import_table:
                 Gamma_grid_info = pickle.load(open(alphas_nouv[alpha], "rb"))
                 print('Table for alpha =',alpha,'available and read in.')
             else:
                 E_0_ = E_cut
-                Gamma_grid_info = generate_table(M, z_reion, r_grid, n_HI, n_HeI, n_HeII, alpha, sed, E_0_)
+                Gamma_grid_info = generate_table(param, z_reion, r_grid, n_HI, n_HeI, n_HeII, alpha, sed, E_0_)
 
         self.Gamma_grid_info = Gamma_grid_info
 
@@ -696,7 +721,7 @@ class Source:
 
         self.grid_param = grid_param
 
-    def solve(self):
+    def solve(self,param ):
         """
         Solves the radiative transfer equation for the given source and the parameters.
 
@@ -735,7 +760,7 @@ class Source:
         n_HeII_grid = zeros_like(r_grid0)
         n_HeIII_grid = zeros_like(r_grid0)
 
-        self.create_table()
+        self.create_table(param)
         N = r_grid.size
         n_HI = self.Gamma_grid_info['input']['n_HI']
         n_HeI = self.Gamma_grid_info['input']['n_HeI']
