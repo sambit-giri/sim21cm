@@ -15,10 +15,14 @@ def sem_num(dens_cube, sourcelist, z, Nion=30, Nrec=0, Rmfp=10, boxsize=None):
 	nn  = dens_cube.shape[0]
 	n_h = N_h*(nn/boxsize)**3
 	n_H = t2c.const.Mpc**3*dens_cube/t2c.const.m_p
+	xf = sem_num_field_compare(n_h, n_H, Rmfp)
+	return xf
+
+def sem_num_field_compare(n_h, n_H, Rmfp):
 	G_mfp = Rmfp*(1.+z)*nn/boxsize
 	Rs = np.arange(G_mfp)+1.
 	xf = np.zeros(dens_cube.shape)
-	for i in xrange(Rs.size):
+	for i in range(Rs.size):
 		ra     = Rs[i]
 		kernel = usefuls.put_circle(np.zeros((nn,nn)), [nn/2,nn/2], ra, label=1)
 		nh_    = smooth_with_kernel_3d(n_h, kernel)
